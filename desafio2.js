@@ -13,28 +13,59 @@ class ProductManager {
   }
 
   addProduct(product) {
+    if (!product.title || !product.description || !product.price || !product.thumbnail || !product.code || !product.stock) {
+      console.error("Todos los campos son obligatorios.");
+      return;
+    }
 
+    const isCodeDuplicate = this.products.some(p => p.code === product.code);
+    if (isCodeDuplicate) {
+      console.error("El código del producto ya existe.");
+      return;
+    }
+
+    const newProduct = {
+      id: this.productIdCounter++,
+      ...product
+    };
+
+    this.products.push(newProduct);
+    console.log("Producto agregado:", newProduct);
     this.saveToFile();
   }
 
   updateProduct(productId, updatedFields) {
+    const productIndex = this.products.findIndex(p => p.id === productId);
 
-    this.saveToFile();
+    if (productIndex !== -1) {
+      this.products[productIndex] = { ...this.products[productIndex], ...updatedFields };
+      console.log("Producto actualizado:", this.products[productIndex]);
+      this.saveToFile();
+    } else {
+      console.error("Producto no encontrado.");
+    }
   }
 
   deleteProduct(productId) {
+    const productIndex = this.products.findIndex(p => p.id === productId);
 
-    this.saveToFile();
+    if (productIndex !== -1) {
+      const deletedProduct = this.products.splice(productIndex, 1);
+      console.log("Producto eliminado:", deletedProduct);
+      this.saveToFile();
+    } else {
+      console.error("Producto no encontrado.");
+    }
   }
 
   getProductById(productId) {
+    return this.products.find(p => p.id === productId);
   }
 
   loadFromFile() {
     try {
       const data = fs.readFileSync(this.filename, 'utf8');
       this.products = JSON.parse(data);
-      // Reiniciar el contador de ID basado en la cantidad de productos cargados
       this.productIdCounter = this.products.reduce((maxId, product) => Math.max(maxId, product.id), 0) + 1;
     } catch (error) {
       this.products = [];
@@ -74,7 +105,6 @@ productManager.addProduct({
 console.log("Productos antes de la actualización:");
 console.log(productManager.getProducts());
 
-// Actualizar un producto
 const productIdToUpdate = 1;
 const updatedFields = {
   price: 250,
@@ -85,7 +115,6 @@ productManager.updateProduct(productIdToUpdate, updatedFields);
 console.log("Productos después de la actualización:");
 console.log(productManager.getProducts());
 
-// Eliminar un producto
 const productIdToDelete = 2;
 productManager.deleteProduct(productIdToDelete);
 

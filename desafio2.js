@@ -120,3 +120,6 @@ productManager.deleteProduct(productIdToDelete);
 
 console.log("Productos después de la eliminación:");
 console.log(productManager.getProducts());
+
+
+module.exports = ProductManager;
